@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no" />
@@ -7,42 +7,55 @@
     <meta name="mobile-web-app-capable" content="yes">
     
     <title>percentime</title>
-    <style type="text/css">
+    <style>
       @import url('https://fonts.googleapis.com/css?family=Lato:300,400');
-      
+
       body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
         margin: 0;
         font-family: 'Lato', sans-serif;
       }
       
       .percentime {
-        margin-top: 15vh;
-        text-align: center;
-        font-weight: lighter;
-        font-size: 4em;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: normal;
+        font-size: 6em;
+      }
+
+      .percentime__details {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        margin-left: .1em;
       }
       
       .percentime__intpart {
         color: #000;
-        font-size: 1.2em;
+        font-size: 1.4em;
       }
       
       .percentime__floatpart {
-        color: #999;
-        font-size: .6em;
+        color: #000;
+        font-size: .3em;
       }
       
       .percentime__unit {
-        color: #000;
-        font-size: .9em;
+        color: #ccc;
+        font-size: .8em;
+        font-weight: lighter;
+        line-height: .8;
       }
       
       
       
       .progress-bar {
         background: #333;
-        background: -webkit-linear-gradient(left, #fff, #eee);
-        background: -moz-linear-gradient(left, #fff, #eee);
+        background: linear-gradient(to right, #fff, #eee);
         
         margin: 0 auto;
         height: 30px;
@@ -55,8 +68,7 @@
       
       .progress-bar__bar {
         background: #0AF;
-        background: -webkit-linear-gradient(left, #38baff, #0AF);
-        background: -moz-linear-gradient(left, #38baff, #0AF);
+        background: linear-gradient(to right, #38baff, #0AF);
         
         height: 100%;
         transition: background-size 150ms;
@@ -95,26 +107,30 @@
       }
       
       .legend {
-        text-align: center;
-        margin: 1em;
-        color: #bbb;
-        font-size: 1.2em;
+        list-style-type: none;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 3rem;
+        padding: 0;
+        color: #888;
+        font-size: 1em;
         line-height: 1.5em;
-      }
-      
-      .legend__spacer {
-        display: inline-block;
-        width: 3em;
       }
     </style>
   </head>
   
   
   <body>
-    <div id="percentime" class="percentime"></div>
-    <div id="progress-bar" class="progress-bar"></div>
-    <div class="legend">
-      1 % = 14min 24s <span class="legend__spacer"></span> 100 % = 24h
+    <div>
+      <div id="percentime" class="percentime"></div>
+      <div id="progress-bar" class="progress-bar"></div>
+      <ul class="legend">
+        <li>1 h = 4.167 %</li>
+        <li>1 % = 14min 24s</li>
+        <li>10 % = 2h 24min</li>
+        <li>100 % = 24h</li>
+      </ul>
     </div>
 
     
@@ -134,12 +150,11 @@
       ProgressBar.prototype.update = function (percentime) {
         this.percentime 	 = percentime;
         this.bar.style.width = percentime + '%';
-        
       }
       
       
       // APP - INIT
-      var nowDate, percentime, intPart, floatPart, parts;
+      var nowDate, percentime, intPart, floatPart, lastFloatPart, parts;
       var percentimeEl 	 = document.getElementById('percentime');
       var progressBarEl  = document.getElementById('progress-bar');
       var progressBar 	 = new ProgressBar(progressBarEl);
@@ -158,10 +173,19 @@
         
         parts     = percentime.toString().split('.');
         intPart   = parts[0];
-        floatPart = parts[1].substr(0, 3);
-        
-        progressBar.update(percentime);
-        percentimeEl.innerHTML = '<span class="percentime__intpart">' + intPart + '</span><span class="percentime__floatpart">.' + floatPart + '</span><span class="percentime__unit"> %</span>';
+        floatPart = parts[1].substring(0, 3);
+
+        if (floatPart !== lastFloatPart) {
+          lastFloatPart = floatPart;
+          progressBar.update(percentime);
+          percentimeEl.innerHTML = `
+              <span class="percentime__intpart">${intPart}</span>
+              <span class="percentime__details">
+                <span class="percentime__floatpart">.${floatPart}</span>
+                <span class="percentime__unit">%</span>
+              </span>
+            `;
+        }
       }
       
       loop();
